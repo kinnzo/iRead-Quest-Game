@@ -1,0 +1,32 @@
+Room,Object,Contains,Image,Exit,Exit Direction
+dark alley,mat,cat,cat.png,store,north
+dark alley,rat,hat,hat.png,store,north
+store,bag,bun,bun.png,meadow,north
+store,pot,jam,jam.png,meadow,north
+meadow,grass,hay,hay.png,living room,north
+meadow,nest,egg,egg.png,living room,north
+living room,shelf,pan,pan.png,kitchen,north
+living room,hay,egg,egg.png,kitchen,north
+kitchen,table,bag,bag.png,Reception,north
+kitchen,stove,food,food.png,Reception,north
+Reception,lady,decision,decision.png,beach,north
+forest,floor,pale,pale.png,beach,east
+forest,tree,sticks,sticks.png,beach,east
+beach,grass,boat,boat.png,river,east
+beach,sand,pedal,pedal.png,river,east
+river,boat,net,net.png,cave,east
+river,water,fish,fish.png,cave,east
+cave,jacket pocket,box of matches,box of matches.png,fireplace,east
+cave,pale,wood sticks,wood sticks.png,fireplace,east
+fireplace,door,lock,lock.png,farm,east
+fireplace,chest,key,key.png,farm,east
+farm,barn,horse,horse.png,mountains,east
+farm,wall,saddle,saddle.png,mountains,east
+mountains,saddle,bag,bag.png,mountain hut,east
+mountains,rocks,magic flowers,magic flowers.png,mountain hut,east
+mountain hut,bench,hook,hook.png,canyon,east
+mountain hut,wall,rope,rope.png,canyon,east
+canyon,cliff,magic stone,magic stone.png,Castle gates,east
+canyon,saddle,rope,rope.png,Castle gates,east
+Castle gates,moat,mud,mud.png,EXIT,east
+Castle gates,bag,magic stone,magic stone.png,EXIT,east

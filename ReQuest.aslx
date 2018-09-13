@@ -1,0 +1,1554 @@
+<!--Saved by Quest 5.7.6606.27193-->
+<asl version="550">
+  <include ref="English.aslx" />
+  <include ref="Core.aslx" />
+  <game name="Castle Quest">
+    <gameid>5aecefc1-c854-4eeb-8c56-adf64d10dc36</gameid>
+    <version>1.0</version>
+    <firstpublished>2018</firstpublished>
+    <subtitle>A castle that reveals your player type.</subtitle>
+    <author>Nikhil Sharma</author>
+    <cover>moat.png</cover>
+    <category>Educational</category>
+    <showmoney type="boolean">false</showmoney>
+    <customstatuspane type="boolean">false</customstatuspane>
+    <defaultbackground>Black</defaultbackground>
+    <panestheme>Midnight</panestheme>
+    <defaultforeground>White</defaultforeground>
+    <colourblend type="boolean">false</colourblend>
+    <backgroundimage>castle.png</backgroundimage>
+    <setbackgroundopacity />
+    <backgroundopacity type="double">0.6</backgroundopacity>
+    <defaultlinkforeground>WhiteSmoke</defaultlinkforeground>
+    <commandpane />
+    <feature_advancedscripts />
+    <borderlesscursor type="boolean">false</borderlesscursor>
+    <commandcursor><![CDATA[&#9760;]]></commandcursor>
+    <showcommandbar />
+    <clearscreenonroomenter type="boolean">false</clearscreenonroomenter>
+    <echocommand />
+    <gridmap type="boolean">false</gridmap>
+    <respondtogridclicks type="boolean">false</respondtogridclicks>
+    <statusandcompassattop type="boolean">false</statusandcompassattop>
+    <setcustomwidth />
+    <showlocation />
+    <start type="script">
+      play sound ("My Little Adventure1.mp3", false, true)
+      player.hearts = 0
+      options = NewStringList()
+      player.money = 5
+      list add (options, "yes")
+      list add (options, "no")
+      ShowMenu ("Would you like to see the leaderboard?", options, false) {
+        switch (result) {
+          case ("yes") {
+            msg ("Great! Leaderboard will be displayed at the end of the game.")
+            player.ach = player.ach+0.75
+          }
+          case ("no") {
+            msg ("Ok. Let us focus on the world.")
+          }
+        }
+        options1 = NewStringList()
+        list add (options1, "yes")
+        list add (options1, "no")
+        ShowMenu ("Would you like to see the timer?", options1, false) {
+          switch (result) {
+            case ("yes") {
+              msg ("Go ahead. The timer will start ticking.")
+              player.ach = player.ach+1
+              player.tflag = 1
+            }
+            case ("no") {
+              msg ("Ok. No timer to disturb you.")
+            }
+          }
+          msg ("What is your first name?")
+          get input {
+            player.alias = result
+            JS.interact (player.alias, player.ach, player.exp, player.urooms, player.hearts, player.money)
+            msg ("Thank You. Now type \"go to start\" to begin the game. You can type \"solve\" for tips. If you use \"solve\" for two times in the same room, the solution is displayed.")
+            picture ("start.gif")
+          }
+        }
+      }
+    </start>
+    <inituserinterface type="script">
+      JS.setCommands ("Look;Help Me;Solve")
+      JS.JS.eval ("$('#gameBorder').css('width', 'device-width, initial-scale=1');")
+    </inituserinterface>
+  </game>
+  <object name="Shop">
+    <inherit name="editor_room" />
+    <description><![CDATA[You can buy:<br/>1 Heart for $10<br/>1 Hat for $5<br/>1 Coat for $15<br/><br/>To buy a heart, you need to type {command:buy heart}. Similarly, you can buy other available objects. From here you will <b>exit into dark alley</b>. Don't worry. All the levels you unlocked earlier are still unlocked. You can go north from there.<br/>]]></description>
+    <enter type="script">
+      EnableTimer (quest2)
+    </enter>
+    <onexit type="script">
+      DisableTimer (quest2)
+    </onexit>
+    <object name="Hat">
+      <inherit name="editor_object" />
+      <price type="int">5</price>
+      <num type="int">2</num>
+    </object>
+    <object name="Coat">
+      <inherit name="editor_object" />
+      <num type="int">2</num>
+      <price type="int">12</price>
+    </object>
+    <object name="Heart">
+      <inherit name="editor_object" />
+      <price type="int">10</price>
+      <num type="int">10</num>
+      <visible />
+      <scenery type="boolean">false</scenery>
+      <look>These hearts symbolize your savings. The more hearts you buy the wealthier you become. {img:Hearts1.jpg}</look>
+    </object>
+    <exit alias="out" to="dark alley">
+      <inherit name="outdirection" />
+    </exit>
+  </object>
+  <command>
+    <scope>Shop</scope>
+    <pattern>buy #object#</pattern>
+    <unresolved>We don't sell what you are looking for.</unresolved>
+    <script><![CDATA[
+      if (object.num > 0) {
+        if (player.money  >= object.price) {
+          player.money = player.money-object.price
+          object.num = object.num-1
+          OutputTextNoBr ("You have bought a beautiful "+object.name+" for yourself.")
+          CloneObject (object)
+          AddToInventory (object)
+          if (StartsWith(LCase(object.name),"hea")) {
+            player.hearts = player.hearts+1
+            msg ("You can see +1 Heart in your Status pane.")
+          }
+          firsttime {
+            player.exp = player.exp+4
+          }
+          otherwise {
+            player.exp = player.exp+2
+          }
+        }
+        else {
+          msg ("You can't afford it.")
+        }
+      }
+      else {
+        msg ("This object is out of stock.")
+      }
+      player.exp = player.exp+1
+    ]]></script>
+  </command>
+  <object name="d1">
+    <inherit name="editor_room" />
+    <description>Welcome to the Text Adventure Game. Please read carefully and figure out what to do to keep going. For the best experience, the use of a laptop or a computer is recommended.</description>
+    <enter type="script">
+    </enter>
+    <object name="player">
+      <inherit name="editor_object" />
+      <inherit name="editor_player" />
+      <statusattributes type="stringdictionary">
+        <item>
+          <key>hearts</key>
+          <value>❤!</value>
+        </item>
+        <item>
+          <key>money</key>
+          <value>!</value>
+        </item>
+      </statusattributes>
+      <exp type="int">0</exp>
+      <ach type="int">0</ach>
+      <visible type="boolean">false</visible>
+      <usedefaultprefix type="boolean">false</usedefaultprefix>
+      <tflag type="int">0</tflag>
+      <urooms type="int">2</urooms>
+      <lookup type="script">
+      </lookup>
+      <openvar type="int">0</openvar>
+    </object>
+    <exit name="start" alias="start" to="dark alley">
+      <inherit name="northdirection" />
+      <visible />
+      <scenery />
+    </exit>
+  </object>
+  <command name="example_sol">
+    <pattern type="string">help</pattern>
+    <unresolved>Whom do I help?</unresolved>
+    <scope type="string"></scope>
+    <script><![CDATA[
+      msg ("You must read the text carefully and then choose one of the available options.")
+      player.exp = player.exp+0.75
+      player.ach = player.ach+0.13
+      msg ("Let us go through the solution of dark alley again:<br/><br/><b>Step 1:</b> Type: \"look at the mat\" or click on <u>mat</u> in the description and select \"look at\".<br/>Now you would have found the cat. Good.        <br/><b>Step 2:</b> Type: \"look at the rat\" or click on <u>rat</u> in the description  and select \"look at\".<br/>You can now see that he is wearing a hat.<br/><b>Step 3:</b> Now you type \"take the hat\" or click on <u>hat</u> in the inventory and select \"take\".<br/><b>Step 3:</b> Finally the task asks you to put hat on the cat. You can do this by exactly writing this phrase in the space below.<br/>You must type: \"put hat on the cat\". Only then the exit will be unlocked.<br/><br/>Now you can try these steps for yourself and continue with the game. All the levels are similar. Continue until you unlock all levels and buy as many hearts as possible.")
+    ]]></script>
+  </command>
+  <command>
+    <pattern>sell #object#</pattern>
+    <unresolved>You can't sell that.</unresolved>
+    <scope>Shop</scope>
+  </command>
+  <object name="dark alley">
+    <inherit name="editor_room" />
+    <description type="script"><![CDATA[
+      if (player.openvar = 1) {
+        msg ("Please keep going north to continue on your way.")
+      }
+      else {
+        msg ("Your challenge is to find and \"put one on the other\": <br/> <br/>{img:cathat.gif}     <br/><br/>We will understand how we can solve this. You have to type this in the next rooms by yourself. So, remember the basic commands!<br/><br/><br/><br/>You can leave go to the next room by simply typing: {command:go north}<br/>See the compass for available directions to go.<br/>Presently the exit is locked. You have commands \"look at\" and \"take\". Here is how you can unlock it.<br/><br/>First, You can {command: look at the rat}. <br/>Second step is that when you find a new object like hat, you can take it by typing {command:take hat}.<br/>Next, you {command:look at the mat} and then you see the cat. <br/>Finally, {command:put hat on the cat} to unlock the exit.<br/><br/>Now you can try these steps for yourself and continue with the game. All the levels are similar. Continue until you unlock all levels and buy as many hearts as possible.")
+      }
+    ]]></description>
+    <enter type="script">
+      if (player.tflag = 1) {
+        EnableTimer (quest)
+      }
+    </enter>
+    <onexit type="script">
+      DisableTimer (quest)
+    </onexit>
+    <exit name="to the store" alias="north" to="store">
+      <inherit name="northdirection" />
+      <visible />
+      <locked />
+    </exit>
+    <object name="mat">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <listchildrenprefix>It has</listchildrenprefix>
+      <look>You look closely at the mat.</look>
+      <object name="cat">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the cat.</takemsg>
+      </object>
+    </object>
+    <object name="rat">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <listchildrenprefix>He is wearing </listchildrenprefix>
+      <look>This is a smelly hat in a corner of the room. Probably lifeless.</look>
+      <object name="hat">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the hat.</takemsg>
+        <feature_usegive />
+        <feature_wearable />
+        <attr name="wear_layer" type="int">2</attr>
+        <wear_slots type="stringlist">
+          <value>dark alley</value>
+        </wear_slots>
+        <selfuseon type="scriptdictionary">
+          <item key="cat">
+            msg ("Great. You now completed your first task.")
+          </item>
+        </selfuseon>
+      </object>
+    </object>
+    <command name="sda">
+      <pattern>solve</pattern>
+      <script>
+        firsttime {
+          msg ("Take the hat. Put hat on something. ")
+        }
+        otherwise {
+          msg ("Take the hat. Put hat on the cat.")
+        }
+        player.exp = player.exp+0.75
+        player.ach = player.ach+0.13
+      </script>
+    </command>
+  </object>
+  <object name="store">
+    <inherit name="editor_room" />
+    <description><![CDATA[Your challenge is to find and "spread one on the other": <br/> <br/>{img:cjambun.gif}]]></description>
+    <enter type="script">
+      if (player.tflag = 1) {
+        EnableTimer (quest)
+      }
+    </enter>
+    <onexit type="script">
+      DisableTimer (quest)
+    </onexit>
+    <exit name="to the meadow" alias="north" to="meadow">
+      <inherit name="northdirection" />
+      <visible />
+      <locked />
+    </exit>
+    <object name="bag">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <look>It contains a bun. You can spread jam on it and take it with you.</look>
+      <object name="bun">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the bun.</takemsg>
+      </object>
+    </object>
+    <object name="pot">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <listchildrenprefix>It contains some</listchildrenprefix>
+      <look>You can spread the jam in it on a bun.</look>
+      <object name="jam">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the jam.</takemsg>
+      </object>
+    </object>
+    <command name="sstore">
+      <pattern>solve</pattern>
+      <script>
+        firsttime {
+          msg ("Take the jam. Spread jam on something")
+        }
+        otherwise {
+          msg ("Take the jam. Spread jam on the bun.")
+        }
+        player.exp = player.exp+0.75
+        player.ach = player.ach+0.13
+      </script>
+    </command>
+    <exit alias="south" to="dark alley">
+      <inherit name="southdirection" />
+    </exit>
+    <exit alias="in to the Shop" to="Shop">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+  <object name="meadow">
+    <inherit name="editor_room" />
+    <description><![CDATA[Your challenge is to find one and "protect it with the other":<br/> <br/>{img:egghay.gif}]]></description>
+    <enter type="script">
+      if (player.tflag = 1) {
+        EnableTimer (quest)
+      }
+    </enter>
+    <onexit type="script">
+      DisableTimer (quest)
+    </onexit>
+    <exit name="to the living room" alias="north" to="living room">
+      <inherit name="northdirection" />
+      <locked />
+      <visible />
+    </exit>
+    <object name="nest">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <look>There are no birds there.</look>
+      <listchildrenprefix>It contains</listchildrenprefix>
+      <object name="egg">
+        <inherit name="editor_object" />
+        <inherit name="plural" />
+        <take />
+        <takemsg>You picked up the eggs.</takemsg>
+        <alias>eggs</alias>
+      </object>
+    </object>
+    <object name="grass1">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <alias>grass</alias>
+      <listchildrenprefix>There is </listchildrenprefix>
+      <look>Now you can keep eggs safely here.</look>
+      <object name="hay">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the hay.</takemsg>
+      </object>
+    </object>
+    <command name="smeadow">
+      <pattern>solve</pattern>
+      <script>
+        firsttime {
+          msg ("Take the eggs. Protect eggs with something.")
+        }
+        otherwise {
+          msg ("Take the eggs. Protect eggs with hay.")
+        }
+        player.exp = player.exp+0.75
+        player.ach = player.ach+0.13
+      </script>
+    </command>
+    <exit alias="south" to="store">
+      <inherit name="southdirection" />
+    </exit>
+    <exit alias="in to the Shop" to="Shop">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+  <object name="living room">
+    <inherit name="editor_room" />
+    <description><![CDATA[Your challenge is to make what is shown. You must "break one in the other": <br/><br/>{img:breakegg.gif}]]></description>
+    <enter type="script">
+      if (player.tflag = 1) {
+        EnableTimer (quest)
+      }
+    </enter>
+    <onexit type="script">
+      DisableTimer (quest)
+    </onexit>
+    <exit name="to the kitchen" alias="north" to="kitchen">
+      <inherit name="northdirection" />
+      <locked />
+      <visible />
+    </exit>
+    <object name="shelf">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <object name="pan">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the pan.</takemsg>
+      </object>
+    </object>
+    <object name="hay1">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <alias>hay</alias>
+      <object name="egg1">
+        <inherit name="editor_object" />
+        <inherit name="plural" />
+        <take />
+        <takemsg>You picked up the egg.</takemsg>
+        <alias>eggs</alias>
+      </object>
+    </object>
+    <command name="sliving">
+      <pattern>solve</pattern>
+      <script>
+        firsttime {
+          msg ("Take the eggs. Break egg in something")
+        }
+        otherwise {
+          msg ("Take the eggs. Break egg in the pan.")
+        }
+        player.exp = player.exp+0.75
+        player.ach = player.ach+0.13
+      </script>
+    </command>
+    <exit alias="south" to="meadow">
+      <inherit name="southdirection" />
+    </exit>
+    <exit alias="in to the Shop" to="Shop">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+  <object name="kitchen">
+    <inherit name="editor_room" />
+    <description><![CDATA[Your challenge is to "store one object in the other" and take it: <br/>       <br/>{img:bagfood.gif}]]></description>
+    <enter type="script">
+      if (player.tflag = 1) {
+        EnableTimer (quest)
+      }
+    </enter>
+    <onexit type="script">
+      DisableTimer (quest)
+    </onexit>
+    <exit name="to the reception" alias="north" to="Reception">
+      <inherit name="northdirection" />
+      <locked />
+      <visible />
+    </exit>
+    <object name="table">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <look>It is an old table. </look>
+      <listchildrenprefix>There is </listchildrenprefix>
+      <object name="bag3">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the bag.</takemsg>
+        <alias>bag</alias>
+      </object>
+    </object>
+    <object name="stove">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <listchildrenprefix>There is some</listchildrenprefix>
+      <look>A clean stove in a clean kitchen.</look>
+      <object name="food">
+        <inherit name="editor_object" />
+        <inherit name="plural" />
+        <take />
+        <takemsg>You picked up the food.</takemsg>
+      </object>
+    </object>
+    <command>
+      <pattern>solve</pattern>
+      <script>
+        firsttime {
+          msg ("Take the food. Store food in something.")
+        }
+        otherwise {
+          msg ("Take the food. Store food in the bag.")
+        }
+        player.exp = player.exp+0.75
+        player.ach = player.ach+0.13
+      </script>
+    </command>
+    <exit alias="south" to="living room">
+      <inherit name="southdirection" />
+    </exit>
+    <exit alias="in to the Shop" to="Shop">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+  <object name="Reception">
+    <inherit name="editor_room" />
+    <description><![CDATA[Now the solve option will not work. You must read the question carefully. You can use the compass to navigate. Either east or west exit will be open for you. <br/><br/>{img:creception.gif}<br/><br/>If you wish to quit, please take a few minutes to fill the feedback  form at the link: www.goo.gl/RKizYn<br/>We would love if you could continue and help us predict your player type better.<br/>           ]]></description>
+    <enter type="script"><![CDATA[
+      if (player.exp > player.ach) {
+        MakeExitVisible (explorerforest)
+        UnlockExit (explorerforest)
+        msg ("Exit on the east is open for you.<br/>You are quite an explorer. <br/>Want to know more about your player type? <br/>Only 5 more rooms to unlock!")
+      }
+      else {
+        MakeExitVisible (achieverfarm)
+        UnlockExit (achieverfarm)
+        msg ("Exit on the west is open for you.<br/>You are quite an achiever. <br/>Want to know more about your player type? <br/>Only 5 more rooms to unlock!")
+      }
+    ]]></enter>
+    <object name="lady">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <look>Well done. Now begins your true adventure. Congratulations on making it till here. All the best for the way ahead!</look>
+    </object>
+    <exit name="explorerforest" alias="east" to="forest">
+      <inherit name="eastdirection" />
+      <visible type="boolean">false</visible>
+      <locked />
+    </exit>
+    <exit name="achieverfarm" alias="west" to="farm">
+      <inherit name="westdirection" />
+      <locked />
+      <visible type="boolean">false</visible>
+    </exit>
+    <exit alias="south" to="kitchen">
+      <inherit name="southdirection" />
+    </exit>
+    <exit alias="in to the Shop" to="Shop">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+  <object name="forest">
+    <inherit name="editor_room" />
+    <description><![CDATA[Your challenge is to find, "cut and place one into the other": <br/> <br/> {img:pail.png} {img:sticks.png}            ]]></description>
+    <enter type="script">
+      if (player.tflag = 1) {
+        EnableTimer (quest)
+      }
+    </enter>
+    <onexit type="script">
+      DisableTimer (quest)
+    </onexit>
+    <exit name="to the beach" alias="east" to="beach">
+      <inherit name="eastdirection" />
+      <locked />
+      <visible />
+    </exit>
+    <object name="ground">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <look>It looks like very few people have made it till this road.</look>
+      <object name="pail">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the sticks.</takemsg>
+      </object>
+    </object>
+    <object name="tree">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <look>This is a small tree near the old one.</look>
+      <listchildrenprefix>You can find</listchildrenprefix>
+      <object name="sticks">
+        <inherit name="editor_object" />
+        <inherit name="plural" />
+        <take />
+        <takemsg>You picked up the sticks.</takemsg>
+      </object>
+    </object>
+    <exit alias="west" to="Reception">
+      <inherit name="westdirection" />
+    </exit>
+    <exit alias="in to the Shop" to="Shop">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+  <object name="beach">
+    <inherit name="editor_room" />
+    <description><![CDATA[Your challenge is to take one thing and "place it in the other". You can ask Mr. Croco : <br/> <br/> {img:boat.png} {img:oars.png}                            ]]></description>
+    <enter type="script">
+      if (player.tflag = 1) {
+        EnableTimer (quest)
+      }
+    </enter>
+    <onexit type="script">
+      DisableTimer (quest)
+    </onexit>
+    <exit name="to the river" alias="east" to="river">
+      <inherit name="eastdirection" />
+      <locked />
+      <visible />
+    </exit>
+    <object name="grass">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <inherit name="plural" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <look>The grasses have grown big.</look>
+      <object name="boat1">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the heavy boat.</takemsg>
+        <alias>boat</alias>
+      </object>
+    </object>
+    <object name="Croco">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <inherit name="namedmale" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <contentsprefix type="string"></contentsprefix>
+      <look>Hello. I am Mr. Croco. Consider me your friend. You can take my oar and use it.</look>
+      <listchildrenprefix>He has</listchildrenprefix>
+      <object name="oar">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the oar.</takemsg>
+      </object>
+    </object>
+    <exit alias="west" to="forest">
+      <inherit name="westdirection" />
+    </exit>
+    <exit alias="in to the Shop" to="Shop">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+  <object name="river">
+    <inherit name="editor_room" />
+    <description><![CDATA[Your challenge is to find and "catch one using the other": <br/> <br/> {img:net.png} {img:fish.png}                            ]]></description>
+    <enter type="script">
+      if (player.tflag = 1) {
+        EnableTimer (quest)
+      }
+    </enter>
+    <onexit type="script">
+      DisableTimer (quest)
+    </onexit>
+    <exit name="to the cave" alias="east" to="cave">
+      <inherit name="eastdirection" />
+      <locked />
+      <visible />
+    </exit>
+    <object name="boat">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <look>This is an old boat.</look>
+      <object name="net">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the net.</takemsg>
+      </object>
+    </object>
+    <object name="water">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <look>The blue water has a lot to offer.</look>
+      <object name="fish">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the fish.</takemsg>
+      </object>
+    </object>
+    <exit alias="west" to="beach">
+      <inherit name="westdirection" />
+    </exit>
+    <exit alias="in to the Shop" to="Shop">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+  <object name="cave">
+    <inherit name="editor_room" />
+    <description><![CDATA[Your challenge is to find and "light one with the other": <br/> <br/> {img:box of matches.png} {img:wood sticks.png}                            ]]></description>
+    <enter type="script">
+      if (player.tflag = 1) {
+        EnableTimer (quest)
+      }
+    </enter>
+    <onexit type="script">
+      DisableTimer (quest)
+    </onexit>
+    <exit name="to the fireplace" alias="east" to="fireplace">
+      <inherit name="eastdirection" />
+      <locked />
+      <visible />
+    </exit>
+    <object name="jacket pocket">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <look>Slighlty torn as you have been wearing it all the while.</look>
+      <object name="box of matches">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the box of matches.</takemsg>
+      </object>
+    </object>
+    <object name="pail1">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <alias>pail</alias>
+      <look>You had put sticks in the pail earlier. This time the God rewards you.</look>
+      <object name="wood sticks">
+        <inherit name="editor_object" />
+        <inherit name="plural" />
+        <take />
+        <takemsg>You picked up the wood sticks.</takemsg>
+      </object>
+    </object>
+    <exit alias="west" to="river">
+      <inherit name="westdirection" />
+    </exit>
+    <exit alias="in to the Shop" to="Shop">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+  <object name="fireplace">
+    <inherit name="editor_room" />
+    <description><![CDATA[Your challenge is to find and "stick one in the other": <br/> <br/> {img:lock.png} {img:key.png}                            ]]></description>
+    <enter type="script">
+      if (player.tflag = 1) {
+        EnableTimer (quest)
+      }
+    </enter>
+    <onexit type="script">
+      DisableTimer (quest)
+    </onexit>
+    <exit name="to completion" alias="east" to="home sweet home">
+      <inherit name="eastdirection" />
+      <locked />
+      <visible />
+    </exit>
+    <object name="door">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <look>It is an old door and hasn't been openend before.</look>
+      <object name="lock">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the lock.</takemsg>
+      </object>
+    </object>
+    <object name="chest">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <look>A beautiful chest and lucky you, you need not run about finding the key.</look>
+      <object name="key">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the key.</takemsg>
+      </object>
+    </object>
+    <exit alias="west" to="cave">
+      <inherit name="westdirection" />
+    </exit>
+    <exit alias="in to the Shop" to="Shop">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+  <object name="farm">
+    <inherit name="editor_room" />
+    <description><![CDATA[Your challenge is to find and "place one on the other": <br/> <br/>{img:saddlehorse.gif}                        ]]></description>
+    <enter type="script">
+      if (player.tflag = 1) {
+        EnableTimer (quest)
+      }
+    </enter>
+    <onexit type="script">
+      DisableTimer (quest)
+    </onexit>
+    <exit name="to the mountains" alias="west" to="mountain">
+      <inherit name="westdirection" />
+      <locked />
+      <visible />
+    </exit>
+    <object name="barn">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <object name="horse">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the horse.</takemsg>
+      </object>
+    </object>
+    <object name="wall1">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <alias>wall</alias>
+      <object name="saddle1">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the saddle.</takemsg>
+        <alias>saddle</alias>
+      </object>
+    </object>
+    <exit alias="in to the Shop" to="Shop">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+  <object name="mountain">
+    <inherit name="editor_room" />
+    <description><![CDATA[Your challenge is to find and "collect one in the other": <br/> <br/> {img:bag.png} <br/> {img:magic flowers.png}                            ]]></description>
+    <enter type="script">
+      if (player.tflag = 1) {
+        EnableTimer (quest)
+      }
+    </enter>
+    <onexit type="script">
+      DisableTimer (quest)
+    </onexit>
+    <exit name="to the mountain hut" alias="east" to="mountain hut">
+      <inherit name="westdirection" />
+      <locked />
+      <visible />
+    </exit>
+    <object name="rocks">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <inherit name="plural" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <object name="magic flowers">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the magic flowers.</takemsg>
+      </object>
+    </object>
+    <object name="saddle3">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <alias>saddle</alias>
+      <object name="bag2">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the magic flowers.</takemsg>
+        <alias>bag</alias>
+      </object>
+    </object>
+    <exit alias="in to the Shop" to="Shop">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+  <object name="mountain hut">
+    <inherit name="editor_room" />
+    <description><![CDATA[Your challenge is to find and "hang one on the other": <br/> <br/> {img:hook.png} <br/> {img:rope.png}                            ]]></description>
+    <enter type="script">
+      if (player.tflag = 1) {
+        EnableTimer (quest)
+      }
+    </enter>
+    <onexit type="script">
+      DisableTimer (quest)
+    </onexit>
+    <exit name="to the canyon" alias="west" to="canyon">
+      <inherit name="westdirection" />
+      <locked />
+      <visible />
+    </exit>
+    <object name="bench">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <object name="hook">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the hook.</takemsg>
+      </object>
+    </object>
+    <object name="wall">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <object name="rope1">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the rope.</takemsg>
+        <alias>rope</alias>
+      </object>
+    </object>
+    <exit alias="in to the Shop" to="Shop">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+  <object name="canyon">
+    <inherit name="editor_room" />
+    <description><![CDATA[Your challenge is to find and "use one to climb to the other": <br/> <br/> {img:magic stone.png} {img:rope.png}                            ]]></description>
+    <enter type="script">
+      if (player.tflag = 1) {
+        EnableTimer (quest)
+      }
+    </enter>
+    <onexit type="script">
+      DisableTimer (quest)
+    </onexit>
+    <exit name="to the castle gates" alias="west" to="Castle gates">
+      <inherit name="westdirection" />
+      <locked />
+      <visible />
+    </exit>
+    <object name="cliff2">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <alias>cliff</alias>
+      <look>The cliff is high still you can see the power of the magic stone. It is visible from below. You can use rope to climb to the magic stone.</look>
+      <object name="magic stone2">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the magic stone.</takemsg>
+        <alias>magic stone</alias>
+      </object>
+    </object>
+    <object name="saddle">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <object name="rope">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the rope.</takemsg>
+      </object>
+    </object>
+    <exit alias="in to the Shop" to="Shop">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+  <object name="Castle gates">
+    <inherit name="editor_room" />
+    <description><![CDATA[Your challenge is to find and "throw one in the other": <br/> <br/> {img:mud.png} <br/> {img:magic stone.png}                                ]]></description>
+    <enter type="script">
+      if (player.tflag = 1) {
+        EnableTimer (quest)
+      }
+    </enter>
+    <onexit type="script">
+      DisableTimer (quest)
+    </onexit>
+    <object name="moat">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <listchildrenprefix>In it, there is </listchildrenprefix>
+      <object name="mud">
+        <inherit name="editor_object" />
+        <inherit name="plural" />
+        <take />
+        <takemsg>You picked up the mud.</takemsg>
+      </object>
+    </object>
+    <object name="bag1">
+      <inherit name="editor_object" />
+      <inherit name="surface" />
+      <feature_container />
+      <hidechildren />
+      <listchildren />
+      <alias>bag</alias>
+      <object name="magic stone">
+        <inherit name="editor_object" />
+        <take />
+        <takemsg>You picked up the magic stone.</takemsg>
+      </object>
+    </object>
+    <exit name="to your home sweet home" alias="north" to="home sweet home">
+      <inherit name="northdirection" />
+      <visible />
+      <locked />
+    </exit>
+    <exit alias="in to the Shop" to="Shop">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+  <command>
+    <pattern>put #object1# on #object2#</pattern>
+    <unresolved>I cannot see that.</unresolved>
+    <scope>dark alley</scope>
+    <script>
+      if (Got(hat)) {
+        if (StartsWith(LCase(object2.name),"ca")) {
+          msg ("Congratulations! You completed your first task. Exit unlocked! Now you can \"go north\".")
+          RemoveObject (hat)
+          MakeExitVisible (to the store)
+          UnlockExit (to the store)
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+3
+          }
+          picture ("congo.gif")
+          player.openvar = 1
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <command>
+    <pattern>spread #object1# on #object2#</pattern>
+    <unresolved>You cannot spread it there.</unresolved>
+    <scope>store</scope>
+    <script>
+      if (Got(jam)) {
+        if (StartsWith(LCase(object2.name),"bu")) {
+          msg ("Congratulations! You completed your second task. Exit unlocked! Now you can \"go north\".")
+          RemoveObject (jam)
+          MakeExitVisible (to the meadow)
+          UnlockExit (to the meadow)
+          player.ach = player.ach+1
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+3
+          }
+          picture ("burp.gif")
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <command>
+    <pattern>protect #object1# with #object2#</pattern>
+    <unresolved>This is not safe</unresolved>
+    <scope>meadow</scope>
+    <script>
+      if (Got(egg)) {
+        if (StartsWith(LCase(object2.name),"ha")) {
+          msg ("Congratulations! You completed your third task. Exit unlocked! Now you can \"go north\".")
+          RemoveObject (egg)
+          MakeExitVisible (to the living room)
+          UnlockExit (to the living room)
+          player.ach = player.ach+1
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+3
+          }
+          picture ("hapeggs.gif")
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <command>
+    <pattern>store #object1# in #object2#</pattern>
+    <unresolved>This is not a good place to store food.</unresolved>
+    <scope>kitchen</scope>
+    <script>
+      if (Got(food)) {
+        if (StartsWith(LCase(object2.name),"ba")) {
+          msg ("Congratulations! You completed your fifth task. Exit unlocked! Now you can \"go north\".")
+          RemoveObject (food)
+          MakeExitVisible (to the reception)
+          UnlockExit (to the reception)
+          player.ach = player.ach+1
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+3
+          }
+          picture ("bagcongo.gif")
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+        player.money = player.money+3
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <command>
+    <pattern>break #object1# in #object2#</pattern>
+    <unresolved>No use breaking it here.</unresolved>
+    <scope>living room</scope>
+    <script>
+      if (Got(egg1)) {
+        if (StartsWith(LCase(object2.name),"pa")) {
+          msg ("Congratulations! You completed your fourth task. Exit unlocked!")
+          RemoveObject (egg1)
+          MakeExitVisible (to the kitchen)
+          UnlockExit (to the kitchen)
+          player.ach = player.ach+1
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+3
+          }
+          picture ("eggcelent.gif")
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <object name="home sweet home">
+    <inherit name="editor_room" />
+    <description><![CDATA[Finally after the adventure you came back to your home. Congratulations! You have completed the game. Try to unlock the other parts as well. <br/>There are two ways to complete this game:<br/>1. Farm<br/>2. Forest<br/>Which one did you miss?<br/><br/>Please take out time to fill this form for our research purpose: www.goo.gl/RKizYn ]]></description>
+    <enter type="script"><![CDATA[
+      if (player.exp > player.ach) {
+        msg ("Here is about your player type!<br/>We feel that you are an explorer. You are creative and like to customize things. You find what most people fail to see. You fall in the 10% of the game players.")
+      }
+      else {
+        msg ("Here is about your player type!<br/>We feel that you are an achiever. You are motivated towards your goal and are not easily distracted. You always like being ahead of others. You fall in the 10% of the game players.")
+      }
+    ]]></enter>
+    <exit alias="in" to="Reception">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+  <command>
+    <unresolved>You cannot place them here.</unresolved>
+    <pattern>cut and place #object1# in #object2#</pattern>
+    <scope>forest</scope>
+    <script>
+      if (Got(sticks)) {
+        if (StartsWith(LCase(object2.name),"pai")) {
+          msg ("Congratulations! You completed your first task. Exit unlocked!")
+          RemoveObject (sticks)
+          MakeExitVisible (to the beach)
+          UnlockExit (to the beach)
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+3
+          }
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <command>
+    <pattern>place #object1# in #object2#</pattern>
+    <unresolved>You cannot place it there.</unresolved>
+    <scope>beach</scope>
+    <script>
+      if (Got(oar)) {
+        if (StartsWith(LCase(object2.name),"boa")) {
+          msg ("Congratulations! You completed your second task. Exit unlocked!")
+          RemoveObject (oar)
+          MakeExitVisible (to the river)
+          UnlockExit (to the river)
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+3
+          }
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <command>
+    <pattern>light #object1# with #object2#</pattern>
+    <unresolved>You cannot light that. Try some some other phrase.</unresolved>
+    <scope>cave</scope>
+    <script>
+      if (Got(box of matches)) {
+        if (StartsWith(LCase(object2.name),"box of mat")) {
+          msg ("Congratulations! You completed your third task. Exit unlocked!")
+          RemoveObject (wood sticks)
+          MakeExitVisible (to the fireplace)
+          UnlockExit (to the fireplace)
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+3
+          }
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <command>
+    <pattern>catch #object1# using #object2#</pattern>
+    <scope>river</scope>
+    <script>
+      if (Got(net)) {
+        if (StartsWith(LCase(object1.name),"fis")) {
+          msg ("Congratulations! You completed your second task. Exit unlocked!")
+          RemoveObject (fish)
+          MakeExitVisible (to the cave)
+          UnlockExit (to the cave)
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+3
+          }
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <command>
+    <scope>fireplace</scope>
+    <pattern>stick #object1# in #object2#</pattern>
+    <script>
+      if (Got(key)) {
+        if (StartsWith(LCase(object2.name),"loc")) {
+          msg ("Congratulations! You completed your first task. Exit unlocked!")
+          RemoveObject (key)
+          MakeExitVisible (to completion)
+          UnlockExit (to completion)
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+3
+          }
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <command>
+    <pattern>place #object1# on #object2#</pattern>
+    <unresolved>You cannot place it there.</unresolved>
+    <scope>farm</scope>
+    <script>
+      if (Got(saddle1)) {
+        if (StartsWith(LCase(object2.name),"hors")) {
+          msg ("Congratulations! You completed your first task. Exit unlocked!")
+          RemoveObject (saddle1)
+          MakeExitVisible (to the mountains)
+          UnlockExit (to the mountains)
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+3
+          }
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <command>
+    <pattern>collect #object1# in #object2#</pattern>
+    <scope>mountains</scope>
+    <unresolved>You cannot keep them there.</unresolved>
+    <script>
+      if (Got(magic flowers)) {
+        if (StartsWith(LCase(object2.name),"ba")) {
+          msg ("Congratulations! You completed your second task. Exit unlocked!")
+          RemoveObject (magic flowers)
+          MakeExitVisible (to the mountain hut)
+          UnlockExit (to the mountain hut)
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+3
+          }
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <command>
+    <pattern>hang #object1# on #object2#</pattern>
+    <unresolved>You cannot hang it there.</unresolved>
+    <scope>mountain hut</scope>
+    <script>
+      if (Got(rope1)) {
+        if (StartsWith(LCase(object2.name),"hoo")) {
+          msg ("Congratulations! You completed your fourth task. Exit unlocked!")
+          RemoveObject (rope1)
+          MakeExitVisible (to the canyon)
+          UnlockExit (to the canyon)
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+3
+          }
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <command>
+    <pattern>use #object1# to climb to #object2#</pattern>
+    <scope>canyon</scope>
+    <unresolved>You cannot go there</unresolved>
+    <script>
+      if (Got(rope)) {
+        if (StartsWith(LCase(object2.name),"magic ston")) {
+          msg ("Congratulations! You completed your fifth task. Exit unlocked!")
+          RemoveObject (rope)
+          MakeExitVisible (to the castle gates)
+          UnlockExit (to the castle gates)
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+3
+          }
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <command>
+    <pattern>throw #object1# in #object2#</pattern>
+    <scope>Castle gates</scope>
+    <unresolved>You shouldn't throw it there.</unresolved>
+    <script>
+      if (Got(magic stone)) {
+        if (StartsWith(LCase(object2.name),"mu")) {
+          msg ("Congratulations! You completed your last task. Exit unlocked!")
+          RemoveObject (magic stone)
+          MakeExitVisible (to your home sweet home)
+          UnlockExit (to your home sweet home)
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+3
+          }
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <command>
+    <pattern>cut #object#</pattern>
+    <scope>forest</scope>
+    <script>
+      if (Got(sticks)) {
+        if (StartsWith(LCase(object.name),"sti")) {
+          msg ("Good now put them in pail.")
+          firsttime {
+            player.money = player.money+1
+          }
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <command>
+    <pattern>put #object1# in #object2#</pattern>
+    <scope>forest</scope>
+    <script>
+      if (Got(sticks)) {
+        if (StartsWith(LCase(object2.name),"pai")) {
+          msg ("Congratulations! You completed your first task. Exit unlocked!")
+          RemoveObject (sticks)
+          MakeExitVisible (to the beach)
+          UnlockExit (to the beach)
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+2
+          }
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <command>
+    <pattern>climb using #object1# to #object2#</pattern>
+    <scope>canyon</scope>
+    <script>
+      if (Got(rope)) {
+        if (StartsWith(LCase(object2.name),"magic ston")) {
+          msg ("Congratulations! You completed your fifth task. Exit unlocked!")
+          RemoveObject (rope)
+          MakeExitVisible (to the castle gates)
+          UnlockExit (to the castle gates)
+          player.urooms = player.urooms + 1
+          firsttime {
+            player.money = player.money+3
+          }
+        }
+        else {
+          msg ("Good try but you have to use it in some other way.")
+        }
+      }
+      else {
+        msg ("You do not have it.")
+      }
+    </script>
+  </command>
+  <function name="update">
+    player.exp = player.exp+1
+  </function>
+  <javascript src="interact.js" />
+  <timer name="quest">
+    <interval>30</interval>
+    <enabled type="boolean">false</enabled>
+    <script>
+      firsttime {
+        msg ("30 seconds have passed. I hope that you find the objects soon.")
+      }
+      otherwise {
+        player.ach = player.ach+0.5
+        msg ("Another 30 seconds have passed. Every second counts.")
+      }
+      JS.interact (player.alias, player.ach, player.exp, player.urooms, player.hearts, player.money)
+    </script>
+  </timer>
+  <timer name="transfer">
+    <interval>25</interval>
+    <enabled />
+    <script>
+      JS.interact (player.alias, player.ach, player.exp, player.urooms, player.hearts, player.money)
+    </script>
+  </timer>
+  <timer name="quest2">
+    <interval>30</interval>
+    <script>
+      player.exp = player.exp+1
+    </script>
+  </timer>
+</asl>
